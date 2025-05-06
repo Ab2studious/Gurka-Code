@@ -5,24 +5,17 @@
 
 using namespace std;
 
+//How to type arrays:
+// Data Type Array Name [Array Size]
+// E.X. int myArray[5] = {1, 2, 3, 4, 5};
+
 // Function declarations
 void homescreen_display(char &homeInput);
 void help_screen_display(char homeInput, char &helpReturn);
-vector<int> shuffle_deck();
-vector<vector<int>> deal_cards(vector<int>& deck, int numPlayers, int cardsPerPlayer);
-void play_game(vector<vector<int>>& playerHands);
 
 int main() {
-    char homeInput, helpReturn;
-
     homescreen_display(homeInput);
-
-    vector<int> deck = shuffle_deck();
-    int numPlayers = 4;
-    int cardsPerPlayer = 6;
-    vector<vector<int>> playerHands = deal_cards(deck, numPlayers, cardsPerPlayer);
-
-    play_game(playerHands);
+    help_screen_display(homeInput, helpReturn);
 
     return 0;
 }
@@ -40,11 +33,25 @@ void homescreen_display(char &homeInput) {
     cout << "Swedish for 'Cucumber'\n\n";
     cout << "Press ENTER/RETURN to begin or ? to view the rules: ";
     cin >> homeInput;
-}3
+
+    if (homeInput == 'q' || homeInput == 'Q') {
+        cout << "Exiting the game. Goodbye!\n";
+        exit(0);
+    } else if (homeInput == '/') {
+        help_screen_display(homeInput, helpReturn);
+    } else if (homeInput == '?') {
+        help_screen_display(homeInput, helpReturn);
+    } else {
+        cout << "Invalid input. Please try again.\n";
+        homescreen_display(homeInput);
+    }
+}
 
 
 // Display help/rules screen
 void help_screen_display(char homeInput, char &helpReturn) {
+       if (homeInput == '/' || homeInput == '?') 
+    { 
     cout << "╔════════════════════════════════════════════════════════════════╗\n";
     cout << "║                         Gurka Rules                            ║\n";
     cout << "╠════════════════════════════════════════════════════════════════╣\n";
@@ -58,59 +65,25 @@ void help_screen_display(char homeInput, char &helpReturn) {
     cout << "╚════════════════════════════════════════════════════════════════╝\n";
     cout << "Press any key to return to the main menu: ";
     cin >> helpReturn;
- 
-    if (homeInput == '/' || homeInput == '?') {
-        help_screen_display(homeInput, helpReturn);
     }
+ 
     else if (homeInput == 'q' || homeInput == 'Q') {
         cout << "Exiting the game. Goodbye!\n";
         exit(0);
-    } else {
+    }
+
+    else 
+    {
         cout << "Invalid input. Please try again.\n";
         help_screen_display(homeInput, helpReturn);
     }
-
 }
 
-// Shuffle a standard 52-card deck
-vector<int> shuffle_deck() {
-    vector<int> deck;
-    for (int i = 1 i <= 52 ++i) {
-        deck.push_back(i);
-    }
-    random_device rd;
-    mt19937 g(rd());
-    shuffle(deck.begin(), deck.end(), g);
-    return deck;
-}
-
-// Deal cards to players
-vector<vector<int>> deal_cards(vector<int>& deck, int numPlayers, int cardsPerPlayer) {
-    // handCount tracks how many cards each player has.
-    // Default is 6.
-    // handCount values should only decrease as the game goes on.
-    int handCount1 = 6;   
-    int handCount2 = 6;
-    int handCount3 = 6;
-    int handCount4 = 6;
-    vector<vector<int>> playerHands(numPlayers);
-    for (int i = 0 i < cardsPerPlayer ++i) {
-        for (int j = 0 j < numPlayers ++j) {
-            if (!deck.empty()) {
-                playerHands[j].push_back(deck.back());
-                deck.pop_back(); 
-            }
-        }
-    
-    return playerHands;
-}
-
-// Display players hands
-void play_game(vector<vector<int>>& playerHands) {
-    int numPlayers = playerHands.size();d << " ";
-        }
-        cout << endl;
-    }
-
-    cout << "\nGame logic not yet implemented.\n";\
-    
+// To-Do List:
+// Choosing the number of players (ask for an input, then add players accordingly)
+// Adding Com for less than 3 human players
+// Selecting 6 random cards for each player
+// Making sure each card value can only appear 4 times in a single game
+// (One for each Suite)
+// Playing Gurka itself\
+// Win screen
