@@ -15,7 +15,7 @@ void playGame(int playerHands[][6], int numPlayers, int cardsPerPlayer);
 
 int main() {
     SetConsoleOutputCP(CP_UTF8);
-    const int deckSize = 52;
+    const int deckSize = 16;
     int deck[deckSize];
     const int numPlayers = 4; // Example: 4 players
     const int cardsPerPlayer = 6; // Each player gets 6 cards
@@ -32,7 +32,8 @@ int main() {
     // Deal cards to players
     dealCards(deck, numPlayers, cardsPerPlayer, playerHands);
 
-    // homescreen();
+    // Display the homescreen
+    homescreen();
 
     // Display the rules
     displayRules();
@@ -44,8 +45,7 @@ int main() {
 }
 
 // Display the title screen
-void homescreen(){
-    char homeInput;
+void homescreen(char homeInput) {
     cout << "╔═══════════════════════════════════════════════╗\n";
     cout << "║             ╔═══╦╗ ╔╦═══╦╗╔═╦═══╗             ║\n";
     cout << "║             ║╔═╗║║ ║║╔═╗║║║╔╣╔═╗║             ║\n";
@@ -72,8 +72,7 @@ void homescreen(){
 }
 
 // Function to display the rules of the game
-void displayRules() {
-    char rulesInput;
+void displayRules(char rulesInput) {
     cout << "╔════════════════════════════════════════════════════════════════════════════════════════════════╗\n";
     cout << "║                                    The Rules of Gurka                                          ║\n";
     cout << "║                                                                                                ║\n";
@@ -86,7 +85,8 @@ void displayRules() {
     cout << "║Repeat this until all players have 1 card left                                                  ║\n";
     cout << "║The player with the lowest value card at the end wins                                           ║\n";
     cout << "╚════════════════════════════════════════════════════════════════════════════════════════════════╝\n";
-    cout << "                             Press Enter to return to the Main Menu                               \n";
+    cout << "                             Press any key to return to the Main Menu                             \n";
+    cout << "                                 Press 'escape' to exit the game                                  \n";
     cin >> rulesInput;
     cout << "\n";
 
