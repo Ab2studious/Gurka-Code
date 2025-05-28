@@ -1,27 +1,32 @@
 // Note: Code will only work correctly / without errors on Windows devices.
+// To run on other devices, remove "#include <windows.h> and "SetConsoleOutputCP(CP_UTF8)".
+// The homescreen and rules screen will look weird and broken, but the game itself will run.
 #include <iostream>
 #include <algorithm>
 #include <random>
 #include <ctime>
+#include <limits>
+#include <vector>
 #include <windows.h>
 
 using namespace std;
 
 // Function declarations
-void homescreen();
+void game();
 void displayRules();
-void shuffleDeck(int deck[], int size);
-void dealCards(int deck[], int numPlayers, int cardsPerPlayer, int playerHands[][6]);
-void playGame(int playerHands[][6], int numPlayers, int cardsPerPlayer);
+void dealCards();
 
-int main() {
+int main()
+{
     SetConsoleOutputCP(CP_UTF8);
-    homescreen();  // this controls everything
+    string deck[52];
+    game(); // This controls everything
     return 0;
 }
 
-// Display the title screen
-void homescreen() {
+// Runs the game itself
+void game() {
+    // Starts the program by displaying the homescreen / title screen.
     char homeInput;
     cout << "╔═══════════════════════════════════════════════╗\n";
     cout << "║             ╔═══╦╗ ╔╦═══╦╗╔═╦═══╗             ║\n";
@@ -31,41 +36,37 @@ void homescreen() {
     cout << "║             ║╚╩═║╚═╝║║║╚╣║║╚╣╔═╗║             ║\n";
     cout << "║             ╚═══╩═══╩╝╚═╩╝╚═╩╝ ╚╝             ║\n";
     cout << "╚═══════════════════════════════════════════════╝\n";
-    cout << "            Press E to start the game            \n";
-    cout << "            Press ? to view the rules            \n";
-    cout << "            Press x to close the game            \n";
+    cout << "            Press 1 to start the game            \n";
+    cout << "            Press 2 to view the rules            \n";
+    cout << "            Press 0 to close the game            \n";
     cin >> homeInput;
-    homeInput = tolower(homeInput);
     cout << "\n";
-
-    if (homeInput == '/') {
+    // Displays the rules screen
+    if (homeInput == '2'){
+        system("cls");
         displayRules();
-    } else if (homeInput == 'e') {
+    }
+    // Starts the game part of the program.
+    else if (homeInput == '1'){
         cout << "Starting the game...\n";
-
-        int deckSize = 52;
-        int deck[deckSize];
-        const int numPlayers = 4;
-        const int cardsPerPlayer = 6;
-        int playerHands[numPlayers][cardsPerPlayer] = {{0}};
-
-        for (int i = 0; i < deckSize; ++i) {
-            deck[i] = i + 1;
-        }
-
-        shuffleDeck(deck, deckSize);
-        dealCards(deck, numPlayers, cardsPerPlayer, playerHands);
-        playGame(playerHands, numPlayers, cardsPerPlayer);
-
-    } else if (homeInput == 'x') {
+        system("cls");
+        dealCards();
+    }
+    // Closes the program from the homescreen.
+    else if (homeInput == '0'){
         cout << "Exiting...\n";
         exit(0);
-    } else {
+    }
+
+    else {
+        system("cls");
         cout << "Invalid input. Please try again.\n";
-        homescreen(); // restart the prompt
+        game(); // restart the prompt
     }
 }
 
+// This function controls the rules screen.
+// View this if you don't know the rules / need a refresher.
 void displayRules() {
     char rulesInput;
     cout << "╔════════════════════════════════════════════════════════════════════════════════════════════════╗\n";
@@ -75,79 +76,76 @@ void displayRules() {
     cout << "║Each player is dealt 6 cards                                                                    ║\n";
     cout << "║Player 1 goes first to start, and the winner of each trick (round) begins the next one          ║\n";
     cout << "║Play goes in numerical order (1, 2, 3, etc. for game start)                                     ║\n";
+    cout << "║H, D, S, and C after a number represent card (E.X. 10S is the 10 of Spades)                     ║\n";
     cout << "║After the first card in each round, players must match or beat the value of the highest card    ║\n";
     cout << "║If this is not possible, your lowest value card must be played                                  ║\n";
     cout << "║Repeat this until all players have 1 card left                                                  ║\n";
     cout << "║The player with the lowest value card at the end wins                                           ║\n";
     cout << "╚════════════════════════════════════════════════════════════════════════════════════════════════╝\n";
     cout << "                             Press any key to return to the Main Menu                             \n";
-    cout << "                                   Press 'x' to exit the game                                  \n";
+    cout << "                                   Press '0' to exit the game                                  \n";
     cin >> rulesInput;
     cout << "\n";
-
-    if (rulesInput == 'x') {
+    // Controls the inputs for when this screen is displayed.
+    if (rulesInput == '0') {
         cout << "Exiting...\n";
         exit(0);
     } else {
-        homescreen();
+        system("cls");
+        game();
     }
 }
 
-// Function to shuffle the deck
-void shuffleDeck(int deck[], int size) {
-    random_device rd;
-    mt19937 g(rd());
-    shuffle(deck, deck + size, g);
-}
-
-// Function to deal cards to players
-void dealCards(int deck[], int numPlayers, int cardsPerPlayer, int playerHands[][6])
+void dealCards()
 {
-    int deckIndex = 0;
-    for (int i = 0; i < cardsPerPlayer; ++i) {
-        for (int j = 0; j < numPlayers; ++j) {
-            if (deckIndex < 52) {
-                playerHands[j][i] = deck[deckIndex++];
-            }
-        }
+    // This array represents a deck of cards
+    vector <string> deck = {"2H ", "3H ", "4H ", "5H ", "6H ", "7H ", "8H ", "9H ", "10H ", "JH ", "QH ", "KH ", "AH ",
+                            "2D ", "3D ", "4D ", "5D ", "6D ", "7D ", "8D ", "9D ", "10D ", "JD ", "QD ", "KD ", "AD ",
+                            "2S ", "3S ", "4S ", "5S ", "6S ", "7S ", "8S ", "9S ", "10S ", "JS ", "QS ", "KS ", "AS ",
+                            "2C ", "3C ", "4C ", "5C ", "6C ", "7C ", "8C ", "9C ", "10C ", "JC ", "QC ", "KC ", "AC "};
+// Shuffles the deck
+    random_device w;
+    mt19937 autoShuffle (w());
+
+    shuffle(deck.begin(), deck.end(), autoShuffle);
+
+    // Random device for selecting cards.
+    srand(time(0));
+    // Change the playerHand arrays to strings.
+    // Player 1's hand.
+    string player1Hand[6];
+    // Player 2's hand.
+    string player2Hand[6];
+    // Player 3's hand.
+    string player3Hand[6];
+
+    // Randomly assigns values to player 1's hand,
+    // then removes that card from the deck.
+    for (size_t i = 0; i < 6; ++i) {
+        player1Hand[i] = deck.back();
+        deck.pop_back();
     }
-}
-// Function to play the game
-void playGame(int playerHands[][6], int numPlayers, int cardsPerPlayer)
-{
-        for (int i = 0; i < numPlayers; ++i) {
-            cout << "Player " << i + 1 << "'s hand: ";
-            for (int j = 0; j < cardsPerPlayer; ++j) {
-                if (playerHands[i][j] != 0) {
-                    cout << playerHands[i][j] << " ";
-                }
-            }
-        cout << endl;
+
+    // Randomly assigns values to player 2's hand.
+    // then removes that card from the deck.
+    for (size_t i = 0; i < 6; ++i) {
+        player2Hand[i] = deck.back();
+        deck.pop_back();
     }
-}
-
-int player1ChooseCard(int playerHand[], int cardsPerPlayer) {
-    int chosenCardIndex = -1;
-
-    while (true) {
-        cout << "Your hand: ";
-        for (int i = 0; i < cardsPerPlayer; ++i) {
-            if (playerHand[i] != 0) { // Display only valid cards
-                cout << "[" << i + 1 << "] " << playerHand[i] << " ";
-            }
-        }
-        cout << endl;
-
-        cout << "Choose a card to play (1-" << cardsPerPlayer << "): ";
-        cin >> chosenCardIndex;
-
-        // Validate input
-        if (chosenCardIndex >= 1 && chosenCardIndex <= cardsPerPlayer && playerHand[chosenCardIndex - 1] != 0) {
-            int chosenCard = playerHand[chosenCardIndex - 1];
-            playerHand[chosenCardIndex - 1] = 0; // Remove the card from the hand
-            return chosenCard; // Return the chosen card
-        } else {
-            cout << "Invalid choice. Please select a valid card.\n";
-        }
+    // Randomly assigns values to player 3's hand.
+    // then removes that card from the deck.
+    for (size_t i = 0; i < 6; ++i) {
+        player3Hand[i] = deck.back();
+        deck.pop_back();
     }
+
+    // Displays each player's hands.
+    cout << "Player 1's hand: " << player1Hand[0] << player1Hand[1] << player1Hand[2] << player1Hand[3] << player1Hand[4] << player1Hand[5] << "\n";
+    cout << "Player 2's hand: " << player2Hand[0] << player2Hand[1] << player2Hand[2] << player2Hand[3] << player2Hand[4] << player2Hand[5] << "\n";
+    cout << "Player 3's hand: " << player3Hand[0] << player3Hand[1] << player3Hand[2] << player3Hand[3] << player3Hand[4] << player3Hand[5] << "\n";
 }
+// Current Goal:
+// Allow Player 1 (the user) to select a card,
+// then have that card played and removed from their hand.
+// (Will require conversion of Arrays to Vectors)
+// (We can copy and paste it for the rest of the turns)
