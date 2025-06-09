@@ -32,9 +32,58 @@ int findLowestCardIndex(const vector<string>& hand);
 int findMatchingOrHigherCardIndex(const vector<string>& hand, int minValue);
 string playCardForAI(vector<string>& hand, int currentMax);
 void playRound(int startingPlayer);
+void roundEndGraphics(const string& p1Card, const string& p2Card, const string& p3Card);
 void showHand();
-int determineRoundWinner(const string& c1, const string& c2, const string& c3);
 void endGame();
+
+void drawCardBox(const string& card) {
+    string rank;
+    char suit;
+    if (card.size() == 3) { // e.g. "10H"
+        rank = card.substr(0, 2);
+        suit = card[2];
+    }
+    else {
+        rank = card.substr(0, 1);
+        suit = card[1];
+    }
+
+    char suitSymbol = ' ';
+
+    switch (suit) {
+        case 'H': suitSymbol = '\3'; break;  // Heart ♥
+        case 'D': suitSymbol = '\4'; break;  // Diamond ♦
+        case 'S': suitSymbol = '\6'; break;  // Spade ♠
+        case 'C': suitSymbol = '\5'; break;  // Club ♣
+        default: suitSymbol = suit; break;   // unknown suit
+    }
+
+    cout << "┌─────┐\n";
+    cout << "│" << rank;
+    if (rank.size() == 1) cout << " "; // pad single char rank
+    cout << "   │\n";
+    cout << "│  " << suitSymbol << "  │\n";
+    cout << "│   ";
+    if (rank.size() == 1) cout << " ";
+    cout << rank << "│\n";
+    cout << "└─────┘\n";
+}
+
+
+void roundEndGraphics(const string& p1Card, const string& p2Card, const string& p3Card) {
+    cout << "\nCards played this round:\n";
+
+    cout << "Player 1:\n";
+    drawCardBox(p1Card);
+
+    cout << "Player 2:\n";
+    drawCardBox(p2Card);
+
+    cout << "Player 3:\n";
+    drawCardBox(p3Card);
+
+    cout << "\n";
+}
 
 int main()
 {
@@ -173,60 +222,61 @@ string getSuit(const string& card) {
 
 // Find lowest card index in hand
 int findLowestCardIndex(const vector<string>& hand) {
-    int minIndex = 0;
-    int minVal = getCardValue(hand[0]);
-    for (int i = 1; i < (int)hand.size(); i++) {
-        int val = getCardValue(hand[i]);
-        if (val < minVal) {
-            minVal = val;
-            minIndex = i;
-        }
-    }
-    return minIndex;
-}
-
-// Find card that matches or beats currentMax, or return -1 if none
-int findMatchingOrHigherCardIndex(const vector<string>& hand, int currentMax) {
-    int chosenIndex = -1;
-    int minValAbove = 1000;
+    int lowestVal = 15;
+    int lowestIndex = -1;
     for (int i = 0; i < (int)hand.size(); i++) {
         int val = getCardValue(hand[i]);
-        if (val >= currentMax && val < minValAbove) {
-            minValAbove = val;
-            chosenIndex = i;
+        if (val < lowestVal) {
+            lowestVal = val;
+            lowestIndex = i;
         }
     }
-    return chosenIndex;
+    return lowestIndex;
 }
 
-// AI plays card following the rule: beat or match highest card if possible; else lowest card
-string playCardForAI(vector<string>& hand, int currentMax) {
-    int index = findMatchingOrHigherCardIndex(hand, currentMax);
-    if (index == -1) {
-        // Play lowest card
-        index = findLowestCardIndex(hand);
+// Find index of card equal or higher than minValue (first one found)
+int findMatchingOrHigherCardIndex(const vector<string>& hand, int minValue) {
+    for (int i = 0; i < (int)hand.size(); i++) {
+        if (getCardValue(hand[i]) >= minValue) {
+            return i;
+        }
     }
-    string card = hand[index];
-    hand.erase(hand.begin() + index);
+    return -1;
+}
+
+string playCardForAI(vector<string>& hand, int currentMax) {
+    int idx = findMatchingOrHigherCardIndex(hand, currentMax);
+    if (idx == -1) {
+        // No card to beat currentMax, play lowest
+        idx = findLowestCardIndex(hand);
+    }
+    string card = hand[idx];
+    hand.erase(hand.begin() + idx);
     return card;
 }
 
-// Show Player 1's current hand with indices
 void showHand() {
-    cout << "Your current hand: ";
+    cout << "Player 1's hand: ";
     for (int i = 0; i < (int)p1Hand.size(); i++) {
         cout << "(" << (i + 1) << ") " << p1Hand[i] << " ";
     }
     cout << "\n";
 }
 
-// Play a single round starting with startingPlayer (1, 2, or 3)
+// Fix winner determination: first player with max value wins
+int determineRoundWinner(int p1Val, int p2Val, int p3Val) {
+    int maxVal = max({ p1Val, p2Val, p3Val });
+    if (p1Val == maxVal) return 1;
+    if (p2Val == maxVal) return 2;
+    return 3;
+}
+
 void playRound(int startingPlayer) {
     int currentMax = 0;
-    string cardsPlayed[3]; // index 0 = player 1, 1=player 2, 2=player 3
+    string cardsPlayed[3];
     int playerOrder[3];
 
-    // Determine order of play
+    // Determine order of players
     if (startingPlayer == 1) {
         playerOrder[0] = 1;
         playerOrder[1] = 2;
@@ -243,132 +293,112 @@ void playRound(int startingPlayer) {
         playerOrder[2] = 2;
     }
 
-    // Play cards in order
     for (int i = 0; i < 3; i++) {
-        int p = playerOrder[i];
-        if (p == 1) {
-            // Player 1 turn - input validation loop
-            bool validPlay = false;
-            while (!validPlay) {
-                showHand();
-                int choice;
-                cout << "Player 1's turn. Select a card to play: ";
-                cin >> choice;
+        int currentPlayer = playerOrder[i];
+        cout << "Player " << currentPlayer << "'s turn\n";
 
-                if (cin.fail() || choice < 1 || choice >(int)p1Hand.size()) {
+        if (currentPlayer == 1) {
+            showHand();
+            int choice;
+            bool validChoice = false;
+            while (!validChoice) {
+                cout << "Choose a card to play (1-" << p1Hand.size() << "): ";
+                if (!(cin >> choice)) {
                     cin.clear();
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    cout << "Invalid choice. Try again.\n";
-                    continue; // ask again
+                    cout << "Invalid input! Please enter a number.\n";
+                    continue;
                 }
-
-                string selectedCard = p1Hand[choice - 1];
-                int val = getCardValue(selectedCard);
-
-                // Check if player must match or beat currentMax
-                int mustBeatIndex = findMatchingOrHigherCardIndex(p1Hand, currentMax);
-
-                // If the card value is less than current max, and player has a valid card to beat/match
-                if (val < currentMax && mustBeatIndex != -1) {
-                    cout << "You must play a card that matches or beats the highest card (" << currentMax << "). Try again.\n";
-                    continue; // force retry
+                if (choice < 1 || choice >(int)p1Hand.size()) {
+                    cout << "Invalid choice! Please select a valid card number.\n";
+                    continue;
                 }
-
-                // If all checks pass:
-                p1Hand.erase(p1Hand.begin() + choice - 1);
-                cardsPlayed[0] = selectedCard;
-                currentMax = max(currentMax, val);
-                cout << "You played: " << selectedCard << "\n\n";
-                validPlay = true;  // exit loop
+                int selectedCardVal = getCardValue(p1Hand[choice - 1]);
+                if (i == 0 || selectedCardVal >= currentMax) {
+                    validChoice = true;
+                }
+                else {
+                    cout << "You must play a card equal or higher than " << currentMax << ".\n";
+                }
             }
+            cardsPlayed[i] = p1Hand[choice - 1];
+            p1Hand.erase(p1Hand.begin() + (choice - 1));
         }
-        else if (p == 2) {
-            string aiCard = playCardForAI(p2Hand, currentMax);
-            int val = getCardValue(aiCard);
-            cardsPlayed[1] = aiCard;
-            currentMax = max(currentMax, val);
-            cout << "Player 2 played: " << aiCard << "\n";
+        else if (currentPlayer == 2) {
+            cardsPlayed[i] = playCardForAI(p2Hand, currentMax);
+            cout << "Player 2 plays: " << cardsPlayed[i] << "\n";
         }
         else { // Player 3
-            string aiCard = playCardForAI(p3Hand, currentMax);
-            int val = getCardValue(aiCard);
-            cardsPlayed[2] = aiCard;
-            currentMax = max(currentMax, val);
-            cout << "Player 3 played: " << aiCard << "\n";
+            cardsPlayed[i] = playCardForAI(p3Hand, currentMax);
+            cout << "Player 3 plays: " << cardsPlayed[i] << "\n";
         }
+
+        currentMax = max(currentMax, getCardValue(cardsPlayed[i]));
+
+        cout << "\n";
     }
 
-    // Determine winner of the round (player with highest card value)
-    int p1Val = getCardValue(cardsPlayed[0]);
-    int p2Val = getCardValue(cardsPlayed[1]);
-    int p3Val = getCardValue(cardsPlayed[2]);
-
-    int maxVal = max({ p1Val, p2Val, p3Val });
-
-    int winnerPlayer = 1;
-    if (p2Val == maxVal) winnerPlayer = 2;
-    if (p3Val == maxVal) winnerPlayer = 3;
-
-    cout << "\nRound winner: Player " << winnerPlayer << "!\n\n";
-
-    // Store cards played for end game calculation
+    // Store cards played to track endgame lowest card
     playedCardsP1.push_back(cardsPlayed[0]);
     playedCardsP2.push_back(cardsPlayed[1]);
     playedCardsP3.push_back(cardsPlayed[2]);
 
-    if (!p1Hand.empty()) {
-        playRound(winnerPlayer);
+    // Show cards graphically after round
+    roundEndGraphics(cardsPlayed[0], cardsPlayed[1], cardsPlayed[2]);
+
+    int p1Val = getCardValue(cardsPlayed[0]);
+    int p2Val = getCardValue(cardsPlayed[1]);
+    int p3Val = getCardValue(cardsPlayed[2]);
+
+    int winnerPlayer = determineRoundWinner(p1Val, p2Val, p3Val);
+    cout << "Round winner: Player " << winnerPlayer << "!\n\n";
+
+    // Add cards won to winner's hand (simulate)
+    if (winnerPlayer == 1) {
+        p1Hand.push_back(cardsPlayed[0]);
+        p1Hand.push_back(cardsPlayed[1]);
+        p1Hand.push_back(cardsPlayed[2]);
+    }
+    else if (winnerPlayer == 2) {
+        p2Hand.push_back(cardsPlayed[0]);
+        p2Hand.push_back(cardsPlayed[1]);
+        p2Hand.push_back(cardsPlayed[2]);
     }
     else {
+        p3Hand.push_back(cardsPlayed[0]);
+        p3Hand.push_back(cardsPlayed[1]);
+        p3Hand.push_back(cardsPlayed[2]);
+    }
+
+    // Check if any player has 1 card left => end game
+    if (p1Hand.size() == 1 || p2Hand.size() == 1 || p3Hand.size() == 1) {
         endGame();
     }
+    else {
+        playRound(winnerPlayer);
+    }
 }
 
-// At the end of the game, determine the player with the lowest card played in the whole game
 void endGame() {
-    cout << "Game over!\n";
+    // Find lowest card among the last cards played (or all played cards)
+    vector<string> allPlayedCards;
+    allPlayedCards.insert(allPlayedCards.end(), playedCardsP1.begin(), playedCardsP1.end());
+    allPlayedCards.insert(allPlayedCards.end(), playedCardsP2.begin(), playedCardsP2.end());
+    allPlayedCards.insert(allPlayedCards.end(), playedCardsP3.begin(), playedCardsP3.end());
 
-    // Find lowest card among all played cards of each player
-    auto findLowestValueCard = [](const vector<string>& cards) {
-        int minVal = 1000;
-        string minCard = "";
-        for (const auto& c : cards) {
-            int val = getCardValue(c);
-            if (val < minVal) {
-                minVal = val;
-                minCard = c;
-            }
+    int lowestVal = 15;
+    string lowestCard = "";
+    for (auto& c : allPlayedCards) {
+        int val = getCardValue(c);
+        if (val < lowestVal) {
+            lowestVal = val;
+            lowestCard = c;
         }
-        return pair<int, string>{minVal, minCard};
-    };
-
-    auto p1Lowest = findLowestValueCard(playedCardsP1);
-    auto p2Lowest = findLowestValueCard(playedCardsP2);
-    auto p3Lowest = findLowestValueCard(playedCardsP3);
-
-    cout << "Player 1's lowest card played: " << p1Lowest.second << " (Value " << p1Lowest.first << ")\n";
-    cout << "Player 2's lowest card played: " << p2Lowest.second << " (Value " << p2Lowest.first << ")\n";
-    cout << "Player 3's lowest card played: " << p3Lowest.second << " (Value " << p3Lowest.first << ")\n";
-
-    // Determine overall winner (lowest card wins)
-    int lowestVal = p1Lowest.first;
-    int winner = 1;
-    if (p2Lowest.first < lowestVal) {
-        lowestVal = p2Lowest.first;
-        winner = 2;
-    }
-    if (p3Lowest.first < lowestVal) {
-        lowestVal = p3Lowest.first;
-        winner = 3;
     }
 
-    cout << "\n Player " << winner << " wins the game with the lowest card! \n\n";
-
-    cout << "Press any key to return to main menu...\n";
-    cin.ignore();
-    cin.get();
-
+    cout << "Game over! Lowest card played is: " << lowestCard << "\n";
+    cout << "Player with the lowest card wins!\n";
+    system("pause");
     system("cls");
-    game();
+    game(); // Return to main menu
 }
-
