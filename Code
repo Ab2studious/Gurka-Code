@@ -14,118 +14,72 @@ vector<string> p1Hand;
 vector<string> p2Hand;
 vector<string> p3Hand;
 
-// Cards played this round
-string p1CardPlayed, p2CardPlayed, p3CardPlayed;
+// Store last card played by each player
+string p1LastCard, p2LastCard, p3LastCard;
 
-// Track all cards played (to find lowest card at the end)
-vector<string> playedCardsP1;
-vector<string> playedCardsP2;
-vector<string> playedCardsP3;
+// Scores (just placeholders for now)
+int p1Score = 0, p2Score = 0, p3Score = 0;
 
 // Function declarations
 void game();
 void displayRules();
+void scoreboard();
 void dealCards();
 int getCardValue(const string& card);
 string getSuit(const string& card);
 int findLowestCardIndex(const vector<string>& hand);
 int findMatchingOrHigherCardIndex(const vector<string>& hand, int minValue);
 string playCardForAI(vector<string>& hand, int currentMax);
-void playRound(int startingPlayer);
-void roundEndGraphics(const string& p1Card, const string& p2Card, const string& p3Card);
-void showHand();
-void endGame();
-
-void drawCardBox(const string& card) {
-    string rank;
-    char suit;
-    if (card.size() == 3) { // e.g. "10H"
-        rank = card.substr(0, 2);
-        suit = card[2];
-    }
-    else {
-        rank = card.substr(0, 1);
-        suit = card[1];
-    }
-
-    char suitSymbol = ' ';
-
-    switch (suit) {
-        case 'H': suitSymbol = '\3'; break;  // Heart ♥
-        case 'D': suitSymbol = '\4'; break;  // Diamond ♦
-        case 'S': suitSymbol = '\6'; break;  // Spade ♠
-        case 'C': suitSymbol = '\5'; break;  // Club ♣
-        default: suitSymbol = suit; break;   // unknown suit
-    }
-
-    cout << "┌─────┐\n";
-    cout << "│" << rank;
-    if (rank.size() == 1) cout << " "; // pad single char rank
-    cout << "   │\n";
-    cout << "│  " << suitSymbol << "  │\n";
-    cout << "│   ";
-    if (rank.size() == 1) cout << " ";
-    cout << rank << "│\n";
-    cout << "└─────┘\n";
-}
-
-
-void roundEndGraphics(const string& p1Card, const string& p2Card, const string& p3Card) {
-    cout << "\nCards played this round:\n";
-
-    cout << "Player 1:\n";
-    drawCardBox(p1Card);
-
-    cout << "Player 2:\n";
-    drawCardBox(p2Card);
-
-    cout << "Player 3:\n";
-    drawCardBox(p3Card);
-
-    cout << "\n";
-}
+void playGame(); // replaces playRound, plays all 6 rounds
+void drawCardBox(const string& card);
 
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
-    game(); // This controls everything
+    game(); // Start the game
     return 0;
 }
 
 void game() {
-    char homeInput;
+    while (true) {
+        char homeInput;
 
-    cout << "╔═══════════════════════════════════════════════╗\n";
-    cout << "║             ╔═══╦╗ ╔╦═══╦╗╔═╦═══╗             ║\n";
-    cout << "║             ║╔═╗║║ ║║╔═╗║║║╔╣╔═╗║             ║\n";
-    cout << "║             ║║ ╚╣║ ║║╚═╝║╚╝╝║║ ║║             ║\n";
-    cout << "║             ║║╔═╣║ ║║╔╗╔╣╔╗║║╚═╝║             ║\n";
-    cout << "║             ║╚╩═║╚═╝║║║╚╣║║╚╣╔═╗║             ║\n";
-    cout << "║             ╚═══╩═══╩╝╚═╩╝╚═╩╝ ╚╝             ║\n";
-    cout << "╚═══════════════════════════════════════════════╝\n";
-    cout << "            Press 1 to start the game            \n";
-    cout << "            Press 2 to view the rules            \n";
-    cout << "            Press 0 to close the game            \n";
-    cin >> homeInput;
+        cout << "╔═══════════════════════════════════════════════╗\n";
+        cout << "║             ╔═══╦╗ ╔╦═══╦╗╔═╦═══╗             ║\n";
+        cout << "║             ║╔═╗║║ ║║╔═╗║║║╔╣╔═╗║             ║\n";
+        cout << "║             ║║ ╚╣║ ║║╚═╝║╚╝╝║║ ║║             ║\n";
+        cout << "║             ║║╔═╣║ ║║╔╗╔╣╔╗║║╚═╝║             ║\n";
+        cout << "║             ║╚╩═║╚═╝║║║╚╣║║╚╣╔═╗║             ║\n";
+        cout << "║             ╚═══╩═══╩╝╚═╩╝╚═╩╝ ╚╝             ║\n";
+        cout << "╚═══════════════════════════════════════════════╝\n";
+        cout << "            Press 1 to start the game            \n";
+        cout << "            Press 2 to view the rules            \n";
+        cout << "            Press 3 to view the score            \n";
+        cout << "            Press 0 to close the game            \n";
+        cin >> homeInput;
 
-    if (homeInput == '2') {
-        system("cls");
-        displayRules();
-    }
-    else if (homeInput == '1') {
-        cout << "Starting the game...\n";
-        system("cls");
-        dealCards();
-        playRound(1); // Player 1 starts the first round
-    }
-    else if (homeInput == '0') {
-        cout << "Exiting...\n";
-        exit(0);
-    }
-    else {
-        system("cls");
-        cout << "Invalid input. Please try again.\n";
-        game(); // restart the prompt
+        if (homeInput == '2') {
+            system("cls");
+            displayRules();
+        }
+        else if (homeInput == '1') {
+            system("cls");
+            dealCards();
+            playGame(); // play the 6 rounds here
+            break; // after game ends, exit to main menu
+        }
+        else if (homeInput == '3') {
+            system("cls");
+            scoreboard();
+        }
+        else if (homeInput == '0') {
+            cout << "Exiting...\n";
+            exit(0);
+        }
+        else {
+            system("cls");
+            cout << "Invalid input. Please try again.\n";
+        }
     }
 }
 
@@ -135,15 +89,16 @@ void displayRules() {
     cout << "╔════════════════════════════════════════════════════════════════════════════════════════════════╗\n";
     cout << "║                                    The Rules of Gurka                                          ║\n";
     cout << "║                                                                                                ║\n";
-    cout << "║Gurka is played by 3-7 players                                                                  ║\n";
+    cout << "║Gurka is played by 3 players                                                                    ║\n";
     cout << "║Each player is dealt 6 cards                                                                    ║\n";
     cout << "║Player 1 goes first to start, and the winner of each trick (round) begins the next one          ║\n";
-    cout << "║Play goes in numerical order (1, 2, 3, etc. for game start)                                     ║\n";
+    cout << "║Play goes in numerical order (1, 2, 3)                                                         ║\n";
     cout << "║H, D, S, and C after a number represent card (E.X. 10S is the 10 of Spades)                     ║\n";
     cout << "║After the first card in each round, players must match or beat the value of the highest card    ║\n";
     cout << "║If this is not possible, your lowest value card must be played                                  ║\n";
-    cout << "║Repeat this until all players have 1 card left                                                  ║\n";
-    cout << "║The player with the lowest value card at the end wins                                           ║\n";
+    cout << "║Repeat this until all players have no cards left                                               ║\n";
+    cout << "║The player with the highest card each round wins and starts the next round                     ║\n";
+    cout << "║At the end, the player whose last played card is the lowest wins the game                      ║\n";
     cout << "╚════════════════════════════════════════════════════════════════════════════════════════════════╝\n";
     cout << "                             Press any key to return to the Main Menu                             \n";
     cout << "                                   Press '0' to exit the game                                  \n";
@@ -155,10 +110,32 @@ void displayRules() {
     }
     else {
         system("cls");
-        game();
     }
 }
 
+void scoreboard()
+{
+    char scoreInput;
+
+    cout << "╔════════════════════════════════════════════════════════════════════════════════════════════════╗\n";
+    cout << "║                                            Scoreboard                                          ║\n";
+    cout << "║Every win each player gets will appear here.                                                    ║\n";
+    cout << "║Resets when the game is closed.                                                                 ║\n";
+    cout << "║Player 1's Score: " << p1Score << "                                                               ║\n";
+    cout << "║Player 2's Score: " << p2Score << "                                                               ║\n";
+    cout << "║Player 3's Score: " << p3Score << "                                                               ║\n";
+    cout << "╚════════════════════════════════════════════════════════════════════════════════════════════════╝\n";
+    cout << "                             Press any key to return to the Main Menu                             \n";
+    cout << "                                   Press '0' to exit the game                                  \n";
+    cin >> scoreInput;
+
+    if (scoreInput == '0')
+        exit(0);
+    else
+        system("cls");
+}
+
+// Deal 6 cards to each player randomly
 void dealCards()
 {
     vector<string> deck = {
@@ -175,9 +152,9 @@ void dealCards()
     p1Hand.clear();
     p2Hand.clear();
     p3Hand.clear();
-    playedCardsP1.clear();
-    playedCardsP2.clear();
-    playedCardsP3.clear();
+
+    // Clear last cards
+    p1LastCard = ""; p2LastCard = ""; p3LastCard = "";
 
     for (int i = 0; i < 6; ++i) {
         p1Hand.push_back(deck.back()); deck.pop_back();
@@ -185,220 +162,207 @@ void dealCards()
         p3Hand.push_back(deck.back()); deck.pop_back();
     }
 
-    // Show only Player 1's hand:
     cout << "Player 1's hand: ";
-    for (int i = 0; i < 6; ++i)
+    for (size_t i = 0; i < p1Hand.size(); ++i)
         cout << "(" << (i + 1) << ") " << p1Hand[i] << " ";
     cout << "\n\n";
 
     cout << "(Other players' cards are hidden.)\n\n";
 }
 
+// Returns card value (2=2, ... 10=10, J=11, Q=12, K=13, A=14)
 int getCardValue(const string& card)
 {
     string rank;
-
-    if (card.size() == 3) // e.g. "10H"
+    if (card.size() == 3) // e.g., "10H"
         rank = card.substr(0, 2);
     else
         rank = card.substr(0, 1);
 
-    if (rank == "A") return 14;
-    if (rank == "K") return 13;
-    if (rank == "Q") return 12;
     if (rank == "J") return 11;
+    if (rank == "Q") return 12;
+    if (rank == "K") return 13;
+    if (rank == "A") return 14;
 
-    try {
-        return stoi(rank);
-    }
-    catch (...) {
-        return 0;
-    }
+    return stoi(rank);
 }
 
-string getSuit(const string& card) {
+string getSuit(const string& card)
+{
     return card.substr(card.size() - 1, 1);
 }
 
-// Find lowest card index in hand
-int findLowestCardIndex(const vector<string>& hand) {
-    int lowestVal = 15;
-    int lowestIndex = -1;
-    for (int i = 0; i < (int)hand.size(); i++) {
+// Find index of lowest card in hand
+int findLowestCardIndex(const vector<string>& hand)
+{
+    int minIndex = 0;
+    int minValue = getCardValue(hand[0]);
+
+    for (int i = 1; i < (int)hand.size(); ++i) {
         int val = getCardValue(hand[i]);
-        if (val < lowestVal) {
-            lowestVal = val;
-            lowestIndex = i;
+        if (val < minValue) {
+            minValue = val;
+            minIndex = i;
         }
     }
-    return lowestIndex;
+    return minIndex;
 }
 
-// Find index of card equal or higher than minValue (first one found)
-int findMatchingOrHigherCardIndex(const vector<string>& hand, int minValue) {
-    for (int i = 0; i < (int)hand.size(); i++) {
-        if (getCardValue(hand[i]) >= minValue) {
-            return i;
+// Find index of card >= minValue in hand; return -1 if none
+int findMatchingOrHigherCardIndex(const vector<string>& hand, int minValue)
+{
+    int chosenIndex = -1;
+    int chosenValue = 1000; // large dummy
+
+    for (int i = 0; i < (int)hand.size(); ++i) {
+        int val = getCardValue(hand[i]);
+        if (val >= minValue && val < chosenValue) {
+            chosenValue = val;
+            chosenIndex = i;
         }
     }
-    return -1;
+    return chosenIndex;
 }
 
-string playCardForAI(vector<string>& hand, int currentMax) {
+// AI plays a card - picks lowest card >= currentMax or lowest card otherwise
+string playCardForAI(vector<string>& hand, int currentMax)
+{
     int idx = findMatchingOrHigherCardIndex(hand, currentMax);
-    if (idx == -1) {
-        // No card to beat currentMax, play lowest
+    if (idx == -1)
         idx = findLowestCardIndex(hand);
-    }
-    string card = hand[idx];
+
+    string chosenCard = hand[idx];
     hand.erase(hand.begin() + idx);
-    return card;
+    return chosenCard;
 }
 
-void showHand() {
-    cout << "Player 1's hand: ";
-    for (int i = 0; i < (int)p1Hand.size(); i++) {
-        cout << "(" << (i + 1) << ") " << p1Hand[i] << " ";
+// Draw card box for visual display
+void drawCardBox(const string& card)
+{
+    if (card.empty()) {
+        cout << "[No card]\n";
+        return;
     }
-    cout << "\n";
+    cout << "╔═════╗\n";
+    cout << "║" << (card.size() == 3 ? card.substr(0, 2) : card.substr(0, 1));
+    if (card.size() == 2) cout << " ";
+    cout << "  ║\n";
+
+    string suit = getSuit(card);
+    if (suit == "H") cout << "║ ♥   ║\n";
+    else if (suit == "D") cout << "║ ♦   ║\n";
+    else if (suit == "S") cout << "║ ♠   ║\n";
+    else if (suit == "C") cout << "║ ♣   ║\n";
+    else cout << "║     ║\n";
+
+    cout << "║  " << (card.size() == 3 ? card.substr(0, 2) : card.substr(0, 1)) << "║\n";
+    cout << "╚═════╝\n";
 }
 
-// Fix winner determination: first player with max value wins
-int determineRoundWinner(int p1Val, int p2Val, int p3Val) {
-    int maxVal = max({ p1Val, p2Val, p3Val });
-    if (p1Val == maxVal) return 1;
-    if (p2Val == maxVal) return 2;
-    return 3;
-}
+// The main game loop: 6 rounds
+void playGame()
+{
+    int startingPlayer = 1; // player 1 starts the first round
 
-void playRound(int startingPlayer) {
-    int currentMax = 0;
-    string cardsPlayed[3];
-    int playerOrder[3];
+    for (int round = 1; round <= 6; ++round) {
+        cout << "===== Round " << round << " =====\n";
 
-    // Determine order of players
-    if (startingPlayer == 1) {
-        playerOrder[0] = 1;
-        playerOrder[1] = 2;
-        playerOrder[2] = 3;
-    }
-    else if (startingPlayer == 2) {
-        playerOrder[0] = 2;
-        playerOrder[1] = 3;
-        playerOrder[2] = 1;
-    }
-    else {
-        playerOrder[0] = 3;
-        playerOrder[1] = 1;
-        playerOrder[2] = 2;
-    }
+        vector<pair<int, string>> cardsPlayed; // (playerNumber, cardPlayed)
+        int currentMaxValue = -1;
+        int roundWinner = -1;
 
-    for (int i = 0; i < 3; i++) {
-        int currentPlayer = playerOrder[i];
-        cout << "Player " << currentPlayer << "'s turn\n";
+        // Determine player order for this round
+        int order[3] = { startingPlayer, (startingPlayer % 3) + 1, ((startingPlayer + 1) % 3) + 1 };
 
-        if (currentPlayer == 1) {
-            showHand();
-            int choice;
-            bool validChoice = false;
-            while (!validChoice) {
-                cout << "Choose a card to play (1-" << p1Hand.size() << "): ";
-                if (!(cin >> choice)) {
-                    cin.clear();
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    cout << "Invalid input! Please enter a number.\n";
-                    continue;
+        for (int i = 0; i < 3; ++i) {
+            int player = order[i];
+            string card;
+
+            if (player == 1) {
+                // Player 1's turn: show hand and prompt choice
+                cout << "Player 1, your hand:\n";
+                for (size_t j = 0; j < p1Hand.size(); ++j) {
+                    cout << (j + 1) << ": " << p1Hand[j] << "\n";
                 }
-                if (choice < 1 || choice >(int)p1Hand.size()) {
-                    cout << "Invalid choice! Please select a valid card number.\n";
-                    continue;
-                }
-                int selectedCardVal = getCardValue(p1Hand[choice - 1]);
-                if (i == 0 || selectedCardVal >= currentMax) {
-                    validChoice = true;
-                }
-                else {
-                    cout << "You must play a card equal or higher than " << currentMax << ".\n";
+
+                int choice;
+                while (true) {
+                    cout << "Choose a card to play by number: ";
+                    cin >> choice;
+
+                    if (choice < 1 || choice >(int)p1Hand.size()) {
+                        cout << "Invalid choice, try again.\n";
+                        continue;
+                    }
+
+                    int val = getCardValue(p1Hand[choice - 1]);
+                    if (currentMaxValue != -1 && val < currentMaxValue) {
+                        // If must match or beat the highest card played so far, reject if lower
+                        cout << "You must play a card equal or higher than " << currentMaxValue << ". Try again.\n";
+                        continue;
+                    }
+
+                    card = p1Hand[choice - 1];
+                    p1Hand.erase(p1Hand.begin() + choice - 1);
+                    p1LastCard = card;
+                    break;
                 }
             }
-            cardsPlayed[i] = p1Hand[choice - 1];
-            p1Hand.erase(p1Hand.begin() + (choice - 1));
-        }
-        else if (currentPlayer == 2) {
-            cardsPlayed[i] = playCardForAI(p2Hand, currentMax);
-            cout << "Player 2 plays: " << cardsPlayed[i] << "\n";
-        }
-        else { // Player 3
-            cardsPlayed[i] = playCardForAI(p3Hand, currentMax);
-            cout << "Player 3 plays: " << cardsPlayed[i] << "\n";
+            else if (player == 2) {
+                card = playCardForAI(p2Hand, currentMaxValue);
+                p2LastCard = card;
+                cout << "Player 2 played: " << card << "\n";
+            }
+            else if (player == 3) {
+                card = playCardForAI(p3Hand, currentMaxValue);
+                p3LastCard = card;
+                cout << "Player 3 played: " << card << "\n";
+            }
+
+            int cardValue = getCardValue(card);
+            cardsPlayed.push_back({ player, card });
+
+            if (cardValue > currentMaxValue) {
+                currentMaxValue = cardValue;
+                roundWinner = player;
+            }
+
+            drawCardBox(card);
         }
 
-        currentMax = max(currentMax, getCardValue(cardsPlayed[i]));
+        cout << "Player " << roundWinner << " wins round " << round << "!\n\n";
 
-        cout << "\n";
+        // Next round starts with roundWinner
+        startingPlayer = roundWinner;
     }
 
-    // Store cards played to track endgame lowest card
-    playedCardsP1.push_back(cardsPlayed[0]);
-    playedCardsP2.push_back(cardsPlayed[1]);
-    playedCardsP3.push_back(cardsPlayed[2]);
+    // After all rounds, determine the game winner by lowest last card
+    int val1 = getCardValue(p1LastCard);
+    int val2 = getCardValue(p2LastCard);
+    int val3 = getCardValue(p3LastCard);
 
-    // Show cards graphically after round
-    roundEndGraphics(cardsPlayed[0], cardsPlayed[1], cardsPlayed[2]);
+    int minVal = min({ val1, val2, val3 });
 
-    int p1Val = getCardValue(cardsPlayed[0]);
-    int p2Val = getCardValue(cardsPlayed[1]);
-    int p3Val = getCardValue(cardsPlayed[2]);
+    cout << "===== Game Over =====\n";
+    cout << "Player 1's last card: " << p1LastCard << "\n";
+    cout << "Player 2's last card: " << p2LastCard << "\n";
+    cout << "Player 3's last card: " << p3LastCard << "\n";
 
-    int winnerPlayer = determineRoundWinner(p1Val, p2Val, p3Val);
-    cout << "Round winner: Player " << winnerPlayer << "!\n\n";
-
-    // Add cards won to winner's hand (simulate)
-    if (winnerPlayer == 1) {
-        p1Hand.push_back(cardsPlayed[0]);
-        p1Hand.push_back(cardsPlayed[1]);
-        p1Hand.push_back(cardsPlayed[2]);
+    if (minVal == val1) {
+        cout << "Player 1 wins the game with the lowest last card!\n";
+        p1Score++;
     }
-    else if (winnerPlayer == 2) {
-        p2Hand.push_back(cardsPlayed[0]);
-        p2Hand.push_back(cardsPlayed[1]);
-        p2Hand.push_back(cardsPlayed[2]);
+    else if (minVal == val2) {
+        cout << "Player 2 wins the game with the lowest last card!\n";
+        p2Score++;
     }
     else {
-        p3Hand.push_back(cardsPlayed[0]);
-        p3Hand.push_back(cardsPlayed[1]);
-        p3Hand.push_back(cardsPlayed[2]);
+        cout << "Player 3 wins the game with the lowest last card!\n";
+        p3Score++;
     }
 
-    // Check if any player has 1 card left => end game
-    if (p1Hand.size() == 1 || p2Hand.size() == 1 || p3Hand.size() == 1) {
-        endGame();
-    }
-    else {
-        playRound(winnerPlayer);
-    }
-}
-
-void endGame() {
-    // Find lowest card among the last cards played (or all played cards)
-    vector<string> allPlayedCards;
-    allPlayedCards.insert(allPlayedCards.end(), playedCardsP1.begin(), playedCardsP1.end());
-    allPlayedCards.insert(allPlayedCards.end(), playedCardsP2.begin(), playedCardsP2.end());
-    allPlayedCards.insert(allPlayedCards.end(), playedCardsP3.begin(), playedCardsP3.end());
-
-    int lowestVal = 15;
-    string lowestCard = "";
-    for (auto& c : allPlayedCards) {
-        int val = getCardValue(c);
-        if (val < lowestVal) {
-            lowestVal = val;
-            lowestCard = c;
-        }
-    }
-
-    cout << "Game over! Lowest card played is: " << lowestCard << "\n";
-    cout << "Player with the lowest card wins!\n";
-    system("pause");
+    cout << "\nPress any key to return to main menu...\n";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin.get();
     system("cls");
-    game(); // Return to main menu
 }
